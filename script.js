@@ -5,11 +5,14 @@ const chatBox = document.getElementById('chat-box');
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const texto = input.value.trim();
-  if (texto === '') return;
+  if (!texto) return;
 
+  // Mostrar mensaje del usuario
   chatBox.innerHTML += `<p><strong>Tú:</strong> ${texto}</p>`;
   input.value = '';
+  chatBox.scrollTop = chatBox.scrollHeight;
 
+  // Mostrar escribiendo...
   const escribiendo = document.createElement('p');
   escribiendo.textContent = 'Balu X está escribiendo...';
   chatBox.appendChild(escribiendo);
@@ -24,9 +27,8 @@ form.addEventListener('submit', async (e) => {
     escribiendo.remove();
     chatBox.innerHTML += `<p><strong>Balu X:</strong> ${res.message.content}</p>`;
     chatBox.scrollTop = chatBox.scrollHeight;
-
-  } catch (err) {
+  } catch {
     escribiendo.remove();
-    chatBox.innerHTML += `<p><strong>Balu X:</strong> Ocurrió un error 😓</p>`;
+    chatBox.innerHTML += `<p><strong>Balu X:</strong> Error al responder 😓</p>`;
   }
 });
