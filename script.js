@@ -3,7 +3,7 @@ const input = document.getElementById('mensaje');
 const chatBox = document.getElementById('chat-box');
 
 form.addEventListener('submit', async (e) => {
-  e.preventDefault(); // 👈 Esto evita que la página se reinicie
+  e.preventDefault();
 
   const texto = input.value.trim();
   if (!texto) return;
@@ -13,11 +13,19 @@ form.addEventListener('submit', async (e) => {
   input.value = '';
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  // Mostrar "escribiendo..."
+  // Mostrar escribiendo...
   const escribiendo = document.createElement('p');
   escribiendo.textContent = 'Balu X está escribiendo...';
   chatBox.appendChild(escribiendo);
   chatBox.scrollTop = chatBox.scrollHeight;
+
+  // Verificar que puter esté disponible
+  if (typeof puter === 'undefined' || !puter.ai) {
+    escribiendo.remove();
+    chatBox.innerHTML += `<p><strong>Balu X:</strong> ⚠️ No estás conectado a Puter. <br>Visita <a href="https://puter.com" target="_blank" style="color:#00bfa5;">puter.com</a> y entra con tu cuenta, luego vuelve.</p>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return;
+  }
 
   try {
     const res = await puter.ai.chat({
@@ -28,9 +36,10 @@ form.addEventListener('submit', async (e) => {
     escribiendo.remove();
     chatBox.innerHTML += `<p><strong>Balu X:</strong> ${res.message.content}</p>`;
     chatBox.scrollTop = chatBox.scrollHeight;
-  } catch {
+  } catch (err) {
     escribiendo.remove();
-    chatBox.innerHTML += `<p><strong>Balu X:</strong> Ocurrió un error 😓</p>`;
+    chatBox.innerHTML += `<p><strong>Balu X:</strong> ❌ Error al contactar a la IA. ¿Estás logueado en Puter?</p>`;
     chatBox.scrollTop = chatBox.scrollHeight;
+    console.error('Error al usar Claude via Puter:', err);
   }
 });
