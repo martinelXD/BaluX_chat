@@ -1,45 +1,66 @@
-const form = document.getElementById('chat-form');
-const input = document.getElementById('mensaje');
-const chatBox = document.getElementById('chat-box');
+// Suponiendo que el nombre y avatar se guardaron en localStorage en el login
+const nombre = localStorage.getItem("nombre") || "Usuario";
+const avatar = localStorage.getItem("avatar") || "";
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+document.getElementById("nombre-usuario").textContent = nombre;
 
+// Si hay avatar personalizado
+if (avatar) {
+  document.getElementById("avatar-usuario").src = avatar;
+} else {
+  // Si no hay imagen, usar avatar con letra
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 100;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#666";
+  ctx.beginPath();
+  ctx.arc(50, 50, 50, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 50px Segoe UI";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(nombre[0].toUpperCase(), 50, 55);
+  document.getElementById("avatar-usuario").src = canvas.toDataURL();
+}
+
+// Enviar mensaje
+function enviarMensaje() {
+  const input = document.getElementById("mensaje");
   const texto = input.value.trim();
   if (!texto) return;
 
-  // Mostrar mensaje del usuario
-  chatBox.innerHTML += `<p><strong>Tú:</strong> ${texto}</p>`;
-  input.value = '';
-  chatBox.scrollTop = chatBox.scrollHeight;
+  agregarMensaje(texto, true);
+  input.value = "";
 
-  // Mostrar escribiendo...
-  const escribiendo = document.createElement('p');
-  escribiendo.textContent = 'Balu X está escribiendo...';
-  chatBox.appendChild(escribiendo);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  setTimeout(() => {
+    agregarMensaje("Hola, soy Balu X 😎", false);
+  }, 1000);
+}
 
-  // Verificar que puter esté disponible
-  if (typeof puter === 'undefined' || !puter.ai) {
-    escribiendo.remove();
-    chatBox.innerHTML += `<p><strong>Balu X:</strong> ⚠️ No estás conectado a Puter. <br>Visita <a href="https://puter.com" target="_blank" style="color:#00bfa5;">puter.com</a> y entra con tu cuenta, luego vuelve.</p>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return;
+function agregarMensaje(texto, esUsuario) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "mensaje " + (esUsuario ? "mensaje-usuario" : "mensaje-balu");
+
+  const img = document.createElement("img");
+  img.className = "avatar";
+  img.src = esUsuario
+    ? document.getElementById("avatar-usuario").src
+    : "https://i.ibb.co/KcZbz0V/pug.png"; // Avatar de Balu
+
+  const burbuja = document.createElement("div");
+  burbuja.className = "burbuja";
+  burbuja.textContent = texto;
+
+  if (esUsuario) {
+    div.appendChild(burbuja);
+    div.appendChild(img);
+  } else {
+    div.appendChild(img);
+    div.appendChild(burbuja);
   }
 
-  try {
-    const res = await puter.ai.chat({
-      model: 'claude-3-sonnet-20240229',
-      messages: [{ role: 'user', content: texto }]
-    });
-
-    escribiendo.remove();
-    chatBox.innerHTML += `<p><strong>Balu X:</strong> ${res.message.content}</p>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-  } catch (err) {
-    escribiendo.remove();
-    chatBox.innerHTML += `<p><strong>Balu X:</strong> ❌ Error al contactar a la IA. ¿Estás logueado en Puter?</p>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-    console.error('Error al usar Claude via Puter:', err);
-  }
-});
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
